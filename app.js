@@ -11,10 +11,10 @@ app.use(express.json());
 app.use(cors());
 
 // parent application route
-app.use("/api/v1/", router);
+app.use("/api", router);
 
 app.get("/", (req, res) => {
-	res.send("Welcome to Personal Finance Server V1");
+	res.send("Welcome to Server");
 });
 
 // global error handler
