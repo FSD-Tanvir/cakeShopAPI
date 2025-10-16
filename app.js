@@ -8,7 +8,9 @@ const app = express();
 
 // parser
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: "*", // or restrict to specific domains later
+}));
 
 // parent application route
 app.use("/api", router);
