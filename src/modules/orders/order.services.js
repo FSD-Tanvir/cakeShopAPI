@@ -1,39 +1,85 @@
-const Order = require('./order.model');
-const AppError = require('../../errors/AppError');
-const { StatusCodes } = require('http-status-codes');
+const Order = require("./order.model");
+const AppError = require("../../errors/AppError");
+const { StatusCodes } = require("http-status-codes");
 
-const createOrder = (payload) => Order.create(payload);
+// create new order
+const createOrder = async (payload) => {
+  try {
+    const order = await Order.create(payload);
 
-const userOrders = (userId) =>
-  Order.find({ user: userId }).populate('items.cake').sort('-createdAt');
+    // populate user and items.cake safely
+    await order.populate("user");
+    await order.populate("items.cake");
 
-const adminListOrders = (query) => {
-  const filter = {};
-  if (query.status) filter.status = query.status;
-  return Order.find(filter)
-    .populate('user', 'name email')
-    .populate('items.cake')
-    .sort('-createdAt');
+    return order;
+  } catch (err) {
+    console.error("❌ createOrder failed:", err);
+    throw err;
+  }
 };
 
-const updateStatus = async (id, status) => {
-  const order = await Order.findById(id);
-  if (!order) throw new AppError(StatusCodes.NOT_FOUND, 'Order not found');
-  order.status = status;
-  await order.save();
+
+// user orders
+const myOrders = (userId) =>
+  Order.find({ user: userId }).populate("user").populate("items.cake");
+
+// admin: all orders
+const listOrders = () =>
+  Order.find().populate("user").populate("items.cake");
+
+// single order
+const getOrder = async (id) => {
+  const order = await Order.findById(id)
+    .populate("user")
+    .populate("items.cake");
+  if (!order) throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+
+   // remove null cakes
+  order.items = order.items.filter((i) => i.cake !== null);
+
   return order;
 };
 
+// update status (admin)
+const setStatus = async (id, status) => {
+  const order = await Order.findByIdAndUpdate(
+    id,
+    { status },
+    { new: true }
+  )
+    .populate("user")
+    .populate("items.cake");
+
+  if (!order) throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  return order;
+};
+
+// update order (general: user or admin)
+const updateOrder = async (id, payload) => {
+  const order = await Order.findByIdAndUpdate(id, payload, { new: true })
+    .populate("user")
+    .populate("items.cake");
+
+  if (!order) throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
+  return order;
+};
+
+// delete order (admin)
 const deleteOrder = async (id) => {
-  const order = await Order.findByIdAndDelete(id);
-  if (!order) throw new AppError(StatusCodes.NOT_FOUND, 'Order not found');
+  const order = await Order.findByIdAndDelete(id)
+    .populate("user")
+    .populate("items.cake");
+
+  if (!order) throw new AppError(StatusCodes.NOT_FOUND, "Order not found");
   return order;
 };
 
 module.exports = {
   createOrder,
-  userOrders,
-  adminListOrders,
-  updateStatus,
+  myOrders,
+  listOrders,
+  getOrder,
+  setStatus,
+  updateOrder,
   deleteOrder,
 };

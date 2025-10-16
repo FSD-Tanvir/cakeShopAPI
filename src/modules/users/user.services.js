@@ -61,6 +61,25 @@ const adminListUsers = () => User.find().select('-password').sort('-createdAt');
 const adminGetUser = (id) =>
   User.findById(id).select('-password').populate('favorites').populate('cart.cake');
 
+
+const adminUpdateUser = async (id, payload) => {
+  const user = await User.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  })
+    .select('-password')
+    .populate('favorites')
+    .populate('cart.cake');
+
+  if (!user) throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
+  return user;
+};
+
+const adminDeleteUser = async (id) => {
+  const user = await User.findByIdAndDelete(id).select('-password');
+  if (!user) throw new AppError(StatusCodes.NOT_FOUND, 'User not found');
+  return user;
+};
 module.exports = {
   getMe,
   toggleFavorite,
@@ -69,4 +88,6 @@ module.exports = {
   clearCart,
   adminListUsers,
   adminGetUser,
+  adminUpdateUser,
+  adminDeleteUser,
 };

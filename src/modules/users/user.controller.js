@@ -74,6 +74,27 @@ const adminUserById = catchAsync(async (req, res) => {
   });
 });
 
+const adminUpdateUser = catchAsync(async (req, res) => {
+  const data = await svc.adminUpdateUser(req.params.id, req.body);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'User updated successfully',
+    data,
+  });
+});
+
+const adminDeleteUser = catchAsync(async (req, res) => {
+  const data = await svc.adminDeleteUser(req.params.id);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: 'User deleted successfully',
+    data,
+  });
+});
+
+
 module.exports = {
   profile,
   favToggle,
@@ -82,4 +103,6 @@ module.exports = {
   cartClear,
   adminUsers,
   adminUserById,
+  adminUpdateUser,
+  adminDeleteUser,
 };

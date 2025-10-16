@@ -13,6 +13,7 @@ app.use(cors());
 // parent application route
 app.use("/api", router);
 
+// root route
 app.get("/", (req, res) => {
 	res.send("Welcome to Server");
 });
